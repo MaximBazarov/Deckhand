@@ -3,15 +3,17 @@ A deckhand (noun ) — a member of a ship's crew who performs general manual lab
 
 Deckhand is a **local agent-management tool for Firstmate**. Its promise is **atomic task and agent management**: one logical task maps one-to-one to its **current** agent, keyed by task id, while **relaunch generations** replace the process rather than creating a second logical agent.
 
-The durable store is the sole authority for that aggregate. Unique task ids, current agent assignments, endpoints, isolated-copy paths, and active generations are enforced together. Lifecycle transitions are explicit, idempotent, and guarded against destructive cleanup, unlanded work, ambiguous ownership, and stale endpoint evidence.
+Deckhand is the authoritative operational source for that task-agent aggregate. Unique task ids, current agent assignments, endpoints, isolated-copy paths, and active generations are enforced together. Lifecycle transitions are explicit, idempotent, and guarded against destructive cleanup, unlanded work, ambiguous ownership, and stale endpoint evidence.
 
 **This repository is in progress.** The current published scope is architecture and decisions only. The CLI, store, and adapters are not a released integration surface yet.
 
 ## What Firstmate will use (and only this)
 
-Firstmate’s **only** integration point is the Deckhand CLI contract, even after future Deckhand internals change.
+Firstmate’s **only** integration point is the Deckhand CLI contract, permanently, even after future Deckhand internals change.
 
-Future Firstmate updates must route **task and agent CRUD, lifecycle changes, reconciliation, and board projections** through that CLI. They must not read or write Firstmate task records (`state/<id>.meta` or equivalent) as a substitute.
+Firstmate uses Deckhand as a client: it submits task-agent commands and consumes Deckhand’s versioned reports and notifications. Deckhand owns the operational state; future Firstmate updates must not read or write Firstmate task records (`state/<id>.meta` or equivalent), inspect Deckhand’s private store, or maintain a shadow copy as a substitute.
+
+Firstmate may retain captain intent and prioritization, but it learns execution state only from Deckhand’s contract-defined responses and projections.
 
 The executable is meant to be callable from any working directory. `FM_HOME` selects the home-local store.
 
